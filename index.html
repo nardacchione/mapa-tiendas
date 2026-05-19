@@ -2,101 +2,114 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Directorio de Tiendas — Changomas</title>
-
-<!-- Leaflet CSS primero, síncrono -->
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mapa de Tiendas - Changomas</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,sans-serif;background:#f4f6f9;color:#1a1a2e;}
-
-.app{display:grid;grid-template-columns:360px 1fr;grid-template-rows:56px 1fr;height:100vh;overflow:hidden;}
-.topbar{grid-column:1/-1;background:#1F3864;display:flex;align-items:center;gap:14px;padding:0 18px;}
-.topbar h1{color:#fff;font-size:15px;font-weight:700;}
-.topbar .badge{background:rgba(255,255,255,.18);color:#fff;font-size:11px;padding:3px 9px;border-radius:12px;}
-.print-btn{margin-left:auto;background:#2E75B6;color:#fff;border:none;padding:6px 14px;border-radius:5px;font-size:12px;cursor:pointer;font-weight:700;display:none;}
-.print-btn:hover{background:#1a5490;}
-
+body{font-family:Arial,sans-serif;background:#f0f4f8;color:#1a1a2e;}
+.shell{display:grid;grid-template-columns:340px 1fr;grid-template-rows:54px 1fr;height:100vh;overflow:hidden;}
+.topbar{grid-column:1/-1;background:#1F3864;display:flex;align-items:center;gap:12px;padding:0 16px;}
+.topbar-title{color:#fff;font-size:14px;font-weight:700;}
+.topbar-badge{background:rgba(255,255,255,.18);color:#BDD7EE;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
+.upd-btn{margin-left:auto;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);padding:5px 12px;border-radius:5px;font-size:12px;cursor:pointer;font-weight:600;}
+.upd-btn:hover{background:rgba(255,255,255,.22);}
+.upd-btn:disabled{opacity:.5;cursor:default;}
+.spin-ico{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;}
+.spinning{animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.status{font-size:11px;color:#BDD7EE;min-width:110px;text-align:right;}
 .sidebar{background:#fff;border-right:1px solid #dde3ed;display:flex;flex-direction:column;overflow:hidden;}
-.search-area{padding:12px 14px;border-bottom:1px solid #eee;}
-.search-area input{width:100%;padding:8px 11px;border:1px solid #cdd5e0;border-radius:6px;font-size:13px;outline:none;}
-.search-area input:focus{border-color:#2E75B6;}
-.filter-row{display:flex;gap:6px;margin-top:7px;}
-.filter-row select{flex:1;padding:5px 7px;border:1px solid #cdd5e0;border-radius:5px;font-size:11px;}
+.search-area{padding:11px 13px;border-bottom:1px solid #eee;}
+.search-area input{width:100%;padding:7px 10px;border:1px solid #cdd5e0;border-radius:5px;font-size:13px;outline:none;}
+.search-area input:focus{border-color:#2E75B6;box-shadow:0 0 0 2px rgba(46,117,182,.1);}
+.frow{display:flex;gap:5px;margin-top:7px;}
+.frow select{flex:1;padding:5px 6px;border:1px solid #cdd5e0;border-radius:5px;font-size:11px;background:#fff;}
 .list-wrap{overflow-y:auto;flex:1;}
-.item{padding:10px 14px;border-bottom:1px solid #f0f2f6;cursor:pointer;display:flex;align-items:center;gap:9px;}
+.item{padding:9px 13px;border-bottom:1px solid #f0f2f6;cursor:pointer;display:flex;align-items:center;gap:8px;}
 .item:hover{background:#f5f8fc;}
-.item.active{background:#EBF3FC;border-left:3px solid #2E75B6;}
+.item.active{background:#EBF3FC;border-left:3px solid #2E75B6;padding-left:10px;}
 .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-.iname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.isub{font-size:11px;color:#888;margin-top:1px;}
-
-#map-container{width:100%;height:100%;}
-
-/* OVERLAY */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;align-items:center;justify-content:center;}
-.overlay.open{display:flex;}
-.card{background:#fff;border-radius:10px;width:500px;max-width:94vw;overflow:hidden;}
-.card-head{background:#1F3864;padding:16px 18px;display:flex;align-items:center;gap:12px;}
-.card-badge{padding:4px 10px;border-radius:5px;font-size:12px;font-weight:800;}
-.card-head h2{color:#fff;font-size:16px;font-weight:700;flex:1;}
-.card-close{background:none;border:none;color:rgba(255,255,255,.7);font-size:22px;cursor:pointer;line-height:1;}
-.card-close:hover{color:#fff;}
-.mini-map{height:180px;width:100%;}
-.card-body{padding:14px 18px 16px;}
-.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin-bottom:12px;}
+.iname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1a1a2e;}
+.isub{font-size:10px;color:#888;margin-top:1px;}
+.empty{padding:24px;text-align:center;color:#aaa;font-size:13px;}
+#map{width:100%;height:100%;}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;align-items:center;justify-content:center;}
+.ov.open{display:flex;}
+.card{background:#fff;border-radius:10px;width:500px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;}
+.card-hd{background:#1F3864;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.fbadge{padding:3px 9px;border-radius:5px;font-size:11px;font-weight:800;}
+.card-hd h2{color:#fff;font-size:14px;font-weight:700;flex:1;margin:0;}
+.xbtn{background:none;border:none;color:rgba(255,255,255,.6);font-size:24px;cursor:pointer;line-height:1;}
+.xbtn:hover{color:#fff;}
+.mmap{height:150px;width:100%;flex-shrink:0;}
+.card-body{padding:12px 16px;overflow-y:auto;flex:1;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;}
 .f{display:flex;flex-direction:column;gap:2px;}
-.fl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#999;}
+.fl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#aaa;}
 .fv{font-size:13px;font-weight:600;color:#1a1a2e;}
-.fv-pill{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;}
+.fpill{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;}
 .fd{grid-column:1/-1;}
-.card-foot{display:flex;justify-content:flex-end;gap:8px;padding-top:10px;border-top:1px solid #eee;}
+.ec-section{margin-top:12px;padding-top:12px;border-top:1px solid #eee;}
+.ec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#aaa;margin-bottom:8px;}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.chip{padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;}
+.chip-on{background:#C6EFCE;color:#375623;}
+.chip-off{background:#f5f5f5;color:#bbb;border:1px solid #e8e8e8;}
+.form-row{display:flex;align-items:center;gap:8px;margin-top:4px;}
+.form-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#aaa;}
+.fbadge2{display:inline-block;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;background:#DDEBF7;color:#1F3864;}
+.cfoot{display:flex;justify-content:flex-end;gap:7px;padding:10px 16px;border-top:1px solid #eee;flex-shrink:0;}
 .btn{padding:6px 14px;border-radius:5px;font-size:12px;cursor:pointer;font-weight:700;border:1px solid;}
-.btn-p{background:#1F3864;color:#fff;border-color:#1F3864;}
-.btn-s{background:#fff;color:#666;border-color:#ccc;}
-
-/* PRINT */
-@media print {
-  @page{size:A4 portrait;margin:14mm 12mm 12mm;}
+.btnp{background:#1F3864;color:#fff;border-color:#1F3864;}
+.btns{background:#fff;color:#666;border-color:#ccc;}
+.btn:hover{opacity:.85;}
+@media print{
+  @page{size:A4 portrait;margin:13mm 11mm;}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .app,.overlay{display:none!important;}
+  .shell,.ov{display:none!important;}
   .ps{display:block!important;}
 }
 .ps{display:none;}
 .ps-hd{display:flex;align-items:center;gap:14px;border-bottom:3px solid #1F3864;padding-bottom:10px;margin-bottom:14px;}
-.ps-badge{padding:6px 12px;border-radius:6px;font-size:14px;font-weight:800;}
-.ps-hd h1{font-size:19px;font-weight:800;color:#1F3864;}
-.ps-hd p{font-size:12px;color:#666;margin-top:2px;}
-.ps-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 16px;margin-bottom:12px;}
+.ps-badge{padding:5px 12px;border-radius:6px;font-size:13px;font-weight:800;}
+.ps-hd h1{font-size:18px;font-weight:800;color:#1F3864;}
+.ps-hd p{font-size:11px;color:#666;margin-top:2px;}
+.ps-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px 14px;margin-bottom:12px;}
 .ps-f{display:flex;flex-direction:column;gap:2px;}
 .ps-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;}
-.ps-v{font-size:13px;font-weight:600;color:#1a1a2e;}
+.ps-v{font-size:12px;font-weight:600;color:#1a1a2e;}
 .ps-fd{grid-column:1/-1;}
-.ps-map{height:210px;border:1px solid #ccc;border-radius:6px;overflow:hidden;margin-bottom:12px;}
+.ps-ec{margin-top:10px;padding-top:8px;border-top:1px solid #eee;}
+.ps-stitle{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:6px;}
+.ps-chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
+.ps-chip{padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;}
+.ps-map{height:200px;border:1px solid #ccc;border-radius:6px;overflow:hidden;margin-bottom:10px;}
 .ps-foot{font-size:9px;color:#aaa;text-align:right;border-top:1px solid #eee;padding-top:5px;}
 </style>
 </head>
 <body>
-
-<div class="app">
+<div class="shell">
   <div class="topbar">
-    <h1>Directorio de Tiendas — Changomas</h1>
-    <span class="badge" id="badge">93 tiendas</span>
-    <button class="print-btn" id="btnPrint" onclick="doPrint()">Imprimir ficha A4</button>
+    <span class="topbar-title">Mapa de Tiendas &#8212; Changomas</span>
+    <span class="topbar-badge" id="badge">93 tiendas</span>
+    <button class="upd-btn" id="updBtn" onclick="reloadData()">
+      <span class="spin-ico" id="spinIco"></span>
+      Actualizar datos
+    </button>
+    <span class="status" id="statusTxt"></span>
   </div>
   <div class="sidebar">
     <div class="search-area">
-      <input id="q" type="text" placeholder="Buscar número, nombre o coordinador..." oninput="filter()">
-      <div class="filter-row">
-        <select id="fc" onchange="filter()">
+      <input id="q" type="text" placeholder="Buscar n&#xFA;mero, nombre, ciudad..." oninput="applyFilter()">
+      <div class="frow">
+        <select id="fc" onchange="applyFilter()">
           <option value="">Todos los coordinadores</option>
           <option value="German Haller">German Haller</option>
           <option value="Nicolas Castiglione">Nicolas Castiglione</option>
           <option value="Pedro Nardacchione">Pedro Nardacchione</option>
         </select>
-        <select id="ff" onchange="filter()">
+        <select id="ff" onchange="applyFilter()">
           <option value="">Todos los formatos</option>
           <option value="HC">Hiper Changomas</option>
           <option value="CH">Changomas</option>
@@ -106,35 +119,40 @@ body{font-family:Arial,sans-serif;background:#f4f6f9;color:#1a1a2e;}
     </div>
     <div class="list-wrap" id="listWrap"></div>
   </div>
-  <div id="map-container"></div>
+  <div id="map"></div>
 </div>
 
-<!-- FICHA POPUP -->
-<div class="overlay" id="ov" onclick="closeOv(event)">
+<div class="ov" id="ov">
   <div class="card">
-    <div class="card-head">
-      <span class="card-badge" id="cBadge"></span>
+    <div class="card-hd">
+      <span class="fbadge" id="cFmt"></span>
       <h2 id="cTitle"></h2>
-      <button class="card-close" onclick="closeOvDirect()">×</button>
+      <button class="xbtn" onclick="closeOvD()">&times;</button>
     </div>
-    <div class="mini-map" id="miniMap"></div>
+    <div class="mmap" id="mmap"></div>
     <div class="card-body">
       <div class="fg">
         <div class="f"><span class="fl">Coordinador</span><span class="fv" id="cCoord"></span></div>
         <div class="f"><span class="fl">Director</span><span class="fv" id="cDir"></span></div>
-        <div class="f"><span class="fl">Regional</span><span class="fv" id="cReg"></span></div>
         <div class="f"><span class="fl">Gerente</span><span class="fv" id="cGer"></span></div>
-        <div class="f fd"><span class="fl">Dirección</span><span class="fv" id="cDireccion"></span></div>
+        <div class="f fd"><span class="fl">Direcci&#xF3;n</span><span class="fv" id="cAddr"></span></div>
       </div>
-      <div class="card-foot">
-        <button class="btn btn-s" onclick="closeOvDirect()">Cerrar</button>
-        <button class="btn btn-p" onclick="doPrint()">Imprimir ficha A4</button>
+      <div class="ec-section">
+        <div class="ec-title">E-Commerce</div>
+        <div class="chips" id="cChips"></div>
+        <div class="form-row">
+          <span class="form-lbl">Formulario:</span>
+          <span id="cForm"></span>
+        </div>
       </div>
+    </div>
+    <div class="cfoot">
+      <button class="btn btns" onclick="closeOvD()">Cerrar</button>
+      <button class="btn btnp" onclick="doPrint()">Imprimir ficha A4</button>
     </div>
   </div>
 </div>
 
-<!-- HOJA A4 -->
 <div class="ps" id="ps">
   <div class="ps-hd">
     <span class="ps-badge" id="psBadge"></span>
@@ -143,206 +161,200 @@ body{font-family:Arial,sans-serif;background:#f4f6f9;color:#1a1a2e;}
   <div class="ps-grid">
     <div class="ps-f"><span class="ps-l">Coordinador</span><span class="ps-v" id="psCoord"></span></div>
     <div class="ps-f"><span class="ps-l">Director</span><span class="ps-v" id="psDir"></span></div>
-    <div class="ps-f"><span class="ps-l">Regional</span><span class="ps-v" id="psReg"></span></div>
     <div class="ps-f"><span class="ps-l">Gerente</span><span class="ps-v" id="psGer"></span></div>
+    <div class="ps-f ps-fd"><span class="ps-l">Direcci&#xF3;n</span><span class="ps-v" id="psDireccion"></span></div>
     <div class="ps-f"><span class="ps-l">Formato</span><span class="ps-v" id="psFmt"></span></div>
-    <div class="ps-f"><span class="ps-l">Número de tienda</span><span class="ps-v" id="psNum"></span></div>
-    <div class="ps-f ps-fd"><span class="ps-l">Dirección</span><span class="ps-v" id="psDireccion"></span></div>
+    <div class="ps-f"><span class="ps-l">N&#xFA;mero</span><span class="ps-v" id="psNum"></span></div>
   </div>
-  <div class="ps-map" id="psMapDiv"></div>
+  <div class="ps-ec">
+    <div class="ps-stitle">E-Commerce habilitado</div>
+    <div class="ps-chips" id="psChips"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+      <span class="ps-l">Formulario:</span><span id="psFrmBadge"></span>
+    </div>
+  </div>
+  <div style="margin-top:12px;" class="ps-map" id="psMapDiv"></div>
   <div class="ps-foot" id="psFoot"></div>
 </div>
 
-<!-- Leaflet JS al final del body, ANTES del script principal -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-// Datos de tiendas
-const TS = [{"num":"1002","nombre":"Rio Cuarto","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Adrián Carignano","regional":"Adrian Vinagre","gerente":"Mariana Miatello","direccion":"Juan B. Justo 2052, Río Cuarto, Córdoba ( X5806ELB )","lat":-33.13116,"lon":-64.3824},{"num":"1003","nombre":"San Luis","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Omar Luna","regional":"Adrian Vinagre","gerente":"Oscar Oliveri","direccion":"Av del Fundador 1450 y Ruta 7, San Luis ( 5700 )","lat":-33.296619,"lon":-66.303039},{"num":"1004","nombre":"San Fernando","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Edgardo Ariosti","regional":"Fernando Gualtieri","gerente":"Silvia Cecconato","direccion":"Cno.Bancalari Boulogne s/n entre 202 y Uruguay, S. Fernando (1646)","lat":-34.484169,"lon":-58.595829},{"num":"1005","nombre":"Las Heras Mendoza","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Sonia Cocconi","regional":"Adrian Vinagre","gerente":"Gerardo Carrizo","direccion":"Boulogne Sur Mer s/n y Regalado Olguin, Las Heras Mendoza ( 5500 )","lat":-32.850687,"lon":-68.858646},{"num":"1006","nombre":"San Juan","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Fabián Contreras","regional":"Adrian Vinagre","gerente":"Oscar Menendez","direccion":"José Ignacio de la Roza Oeste 806, Rivadavia, San Juan ( J5402DCV )","lat":-31.541112,"lon":-68.573364},{"num":"1007","nombre":"La Rioja","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"TBD","regional":"Adrian Vinagre","gerente":"Castro Eduardo Luis","direccion":"Av.Ortiz de Ocampo 1127 y Ejército Argentino, La Rioja (5300)","lat":-29.428056,"lon":-66.862434},{"num":"1008","nombre":"Corrientes","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Pedro Nardacchione","director":"Horacio Tupponi","regional":"Luciano Budman","gerente":"Cristian Baez","direccion":"Gregorio Pomar 840, Corrientes ( W3402CBJ )","lat":-27.47005,"lon":-58.805927},{"num":"1010","nombre":"Cordoba Sur","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Sergio Volpe","regional":"Adrian Vinagre","gerente":"Mario Cabrera","direccion":"Horacio Juárez 4443, X5011CZG Córdoba","lat":-31.466986,"lon":-64.162452},{"num":"1011","nombre":"Salta","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Cristian A. Pantano","regional":"Luciano Budman","gerente":"Gladys Negro","direccion":"Av Paraguay 1450 y Av Bélgica, Salta ( 4400 )","lat":-24.804821,"lon":-65.420784},{"num":"1012","nombre":"Santiago","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Luis Remedi","regional":"Luciano Budman","gerente":"VICENTE CAMPOS","direccion":"Av Belgrano Sud 2663 (esq.Suarez), Bo.Ramon Carrillo, Sgo del Estero ( G4200ACA )","lat":-27.809677,"lon":-64.249649},{"num":"1013","nombre":"Tigre","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Sebastian Acevey","regional":"Fernando Gualtieri","gerente":"DEBORA UBEDA","direccion":"Colombia 1212, El Talar, Tigre ( CP1617 )","lat":-34.47377,"lon":-58.66267},{"num":"1014","nombre":"Lujan","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Pedro Nardacchione","director":"Alejandro Alberini","regional":"Fernando Gualtieri","gerente":"Sergio Sauco","direccion":"Payró 198, Barrio Juan 23, Luján, Pcia. De Bs.As ( CP 6700 )","lat":-34.548107,"lon":-59.112037},{"num":"1015","nombre":"Maipú","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Leandro Martin Ceballos","regional":"Adrian Vinagre","gerente":"Nadia Gulli","direccion":"Maza 470, Maipú - Mendoza (CP M5515)","lat":-32.978813,"lon":-68.797142},{"num":"1016","nombre":"HC Avellaneda 2","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Fernando Santa Cruz","regional":"Rafael Ghirardi","gerente":"Cristian Rificci","direccion":"Autopista BsAs-La Plata , km 9 Sarandí, Bs As (1870)","lat":-34.678569,"lon":-58.334423},{"num":"1017","nombre":"Tablada","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Dario Valiente","regional":"Fernando Gualtieri","gerente":"Yesica Diaz","direccion":"Monseñor Bufano 6050, La Tablada ( B7163XAA )","lat":-34.701454,"lon":-58.534011},{"num":"1018","nombre":"Quilmes","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Andres Mosciaro","regional":"Rafael Ghirardi","gerente":"Jesica Salvatierra","direccion":"Av Calchaquí 700, Quilmes ( B1879ESQ )","lat":-34.733394,"lon":-58.293617},{"num":"1020","nombre":"Tucumán","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Pedro Nardacchione","director":"Jesús Bravo","regional":"Luciano Budman","gerente":"Ivan David Visa","direccion":"Av.Camino del Perú 950 ( CP4000 ) S M de Tucumán","lat":-26.804676,"lon":-65.26001},{"num":"1021","nombre":"Neuquén 2","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Juan Pablo Seletti","regional":"Rafael Ghirardi","gerente":"Marcela Riveros","direccion":"Av.Belgrano 2735 ( CP8300 ), Neuquén","lat":-38.950523,"lon":-68.097285},{"num":"1022","nombre":"Bariloche","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Hugo Adrian Frascarelli","regional":"Rafael Ghirardi","gerente":"Silvia Cifuentes","direccion":"Av. J.Hermann e/Pasaje Gutierrez y Calfu-Co, Bariloche, Rio Negro ( CP 8400 )","lat":-41.160854,"lon":-71.319145},{"num":"1023","nombre":"La Pampa","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Cesar Maldonado","regional":"Rafael Ghirardi","gerente":"Vanesa Fernandez","direccion":"Av. Circunvalación Santiago Marzo 1550, villa Alonso Norte, Santa Rosa  (CP 6300)","lat":-36.603195,"lon":-64.270973},{"num":"1024","nombre":"Formosa","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Juan Juri","regional":"Luciano Budman","gerente":"Mariana Lemos","direccion":"Av. Gunitsky 3636 entre Av. J. de Pueyrredón y Brandsen (CP 3600)","lat":-26.19504,"lon":-58.203313},{"num":"1026","nombre":"Catamarca","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Eduardo Boris","regional":"Adrian Vinagre","gerente":"Jose Castro","direccion":"Av.Acosta Villafañe 2420, Catamarca( CP 4700 )","lat":-28.467222,"lon":-65.755218},{"num":"1027","nombre":"Mataderos","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Pedro Nardacchione","director":"Miguel Verge","regional":"Fernando Gualtieri","gerente":"Andrea patricia Gularte","direccion":"Eva Perón 5526 y Miralla, Capital Federal( CP 1440 )","lat":-34.661576,"lon":-58.484237},{"num":"1028","nombre":"Alte Brown","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Malva Cantero","regional":"Rafael Ghirardi","gerente":"Martin Canis","direccion":"Av. Espora 2074 , Partido de Alte Brown( CP 1846 )","lat":-34.816631,"lon":-58.389896},{"num":"1029","nombre":"Moreno","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Silvia Gauna","regional":"Fernando Gualtieri","gerente":"Noelia Vallejos","direccion":"Av. Julio Argentino Roca al 3500 entre Santos Dumont y Vasco Da Gamma, a 3 cuadras de Av. Del Libertador (Ruta 23), Partido de Moreno, GBA ( CP 1744 )","lat":-34.588063,"lon":-58.745112},{"num":"1030","nombre":"José C Paz","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Pedro Nardacchione","director":"Emmanuel Corvalan","regional":"Fernando Gualtieri","gerente":"Alberto Pereira","direccion":"Av. Gaspar Campos 5690 entre Juan Díaz de Solís y Pueyrredón, Partido de José C. Paz ( CP 1665 )","lat":-34.530126,"lon":-58.749982},{"num":"1031","nombre":"Jujuy","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Erica Hal","regional":"Luciano Budman","gerente":"Gonzalo Toledo","direccion":"Riobamba y Ruta 9, San Salvador de Jujuy ( CP 4600 )","lat":-24.210677,"lon":-65.288497},{"num":"1032","nombre":"Malvinas","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Juan Silva","regional":"Fernando Gualtieri","gerente":"Sonia trejo","direccion":"Av. Del Sesquincentenario,  Malvinas Argentinas, GBA ( CP 1846 )","lat":-34.499103,"lon":-58.710798},{"num":"1033","nombre":"Río Salí","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"José Jaldo","regional":"Luciano Budman","gerente":"Ivan sanchez","direccion":"Guatemala y San Martín, Banda Rio Sali, Tucuman ( CP 4109 )","lat":-26.837785,"lon":-65.16938},{"num":"1035","nombre":"3 de febrero","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"TBD","regional":"Fernando Gualtieri","gerente":"Gisela Casimiro","direccion":"Av. Presidente Juan Domingo Perón Nº9150 ( CP B1687AEV )","lat":-34.575111,"lon":-58.611389},{"num":"1036","nombre":"Moreno Shopping","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Pedro Nardacchione","director":"Fernanda Laffón","regional":"Fernando Gualtieri","gerente":"Sergio Gimenez","direccion":"Martinez Melo 151 (Es la entrada al shopping y estacionamiento) ( CP B1744FDC )","lat":-34.651918,"lon":-58.792474},{"num":"1037","nombre":"San Martin","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Nicolas Castiglione","director":"Daniel Gomez","regional":"Fernando Gualtieri","gerente":"Roberto Gil","direccion":"Estrada 3072 / 82 / 84 ( CP 1650 )","lat":-34.5741,"lon":-58.530495},{"num":"1038","nombre":"Cipolletti","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Adrián Gallego","regional":"Rafael Ghirardi","gerente":"Victor Norambuena","direccion":"Calle Bolivia 1169 esq. Primeros Pobladores (951), Ciudad de Cipolletti, Prov. De Río Negro ( CP 8324 )","lat":-38.931846,"lon":-67.984138},{"num":"1039","nombre":"Paraná 2","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Carlos Campos","regional":"Adrian Vinagre","gerente":"Karina Sosa","direccion":"Av. Blas Parera 1152  ( CP3100 )","lat":-31.74191,"lon":-60.493869},{"num":"1042","nombre":"Trelew","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Hugo Rispero","regional":"Rafael Ghirardi","gerente":"Carmen Rocha","direccion":"Av. Peron Ruta N°719 (CP 9102)","lat":-43.249282,"lon":-65.290804},{"num":"1043","nombre":"Laferrere","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Victor Chantada","regional":"Fernando Gualtieri","gerente":"Carlos Roman","direccion":"Ruta 21 y Carlos Casares, Laferrere, PBA ( CP 1757 )","lat":-34.74189,"lon":-58.564317},{"num":"1044","nombre":"Hurlingham Villegas","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Pedro Nardacchione","director":"Nelson Otero","regional":"Fernando Gualtieri","gerente":"Mariana Coronado","direccion":"Av. Villegas 2750 ( esquina Malaspina )","lat":-34.587223,"lon":-58.662776},{"num":"1045","nombre":"Hurlingham Vergara","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Pedro Nardacchione","director":"Claudio Assiari","regional":"Fernando Gualtieri","gerente":"Carla Beltrando","direccion":"Av. Vergara 2950","lat":-34.607497,"lon":-58.635181},{"num":"1046","nombre":"Pergamino","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Nicolas Castiglione","director":"Gabriel Humberto Montaño","regional":"Fernando Gualtieri","gerente":"Ojeda Ana Laura","direccion":"Boulevard Dardo Rocha Nº 280, entre San luis y Catamarca","lat":-33.894012,"lon":-60.564921},{"num":"1050","nombre":"Lanús","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Lorena Paz","regional":"Rafael Ghirardi","gerente":"Sergio Ovejero","direccion":"Boulevard de los Italianos 321, entre calles Belgrano y Donato Alvarez ( CP 1824 )","lat":-34.718809,"lon":-58.351975},{"num":"1051","nombre":"Posadas","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Diego Acuña","regional":"Luciano Budman","gerente":"Marcela Espindola","direccion":"Av Tambor de Tacuari 5158 / 5198 ó Zapiola 2149  ( CP 3300 )","lat":-27.367221,"lon":-55.927509},{"num":"1052","nombre":"Oran","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Jorgelina Miranda","regional":"Luciano Budman","gerente":"Monica Figueroa","direccion":"Av.Pueyrredon y Av.Palacios , Oran ( CP 4530 ) Salta","lat":-23.144838,"lon":-64.326263},{"num":"1053","nombre":"Viedma","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Hugo Carro","regional":"Rafael Ghirardi","gerente":"Maxi Cravotta","direccion":"Tierra del Fuego 514 entre Calle Colectora de Av. Cardenal Cagliero y Corrientes, Pcia. De Río Negro ( CP 8500 )","lat":-40.824867,"lon":-62.984272},{"num":"1054","nombre":"Olavarría","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Nahuel Perez","regional":"Fernando Gualtieri","gerente":"Andrea Blando","direccion":"Av. Rivadavia 4370, Olavarria ( CP B7400CVP )","lat":-36.880767,"lon":-60.304042},{"num":"1055","nombre":"Villa Mercedes (San Luis)","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Nicolás Giovannini","regional":"Adrian Vinagre","gerente":"Marcela Monje","direccion":"Av Juan Domingo Peron 825, Pcia. De San Luis ( CP 5730 )","lat":-33.680309,"lon":-65.452308},{"num":"1056","nombre":"Villa Nueva","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Nieves Rodriguez","regional":"Adrian Vinagre","gerente":"Raquel Irene Farias","direccion":"Av. Carranza 980 ( entre calle Lima y Costanera ) Villanueva, Pcia. De Córdoba (CP 5903)","lat":-32.423605,"lon":-63.243978},{"num":"1057","nombre":"Comodoro Sur","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Mariano Reyes","regional":"Rafael Ghirardi","gerente":"Valeria Pilar","direccion":"Chile y Girolamo, Comodoro Rivadavia, Chubut ( CP 9000 )","lat":-45.883474,"lon":-67.525299},{"num":"1058","nombre":"Resistencia","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Pedro Nardacchione","director":"Diego Sánchez","regional":"Luciano Budman","gerente":"Luz Acosta Recchia","direccion":"Rta. 11 y Marconi, Pcia. Del Chaco ( CP 3500 )","lat":-27.446553,"lon":-59.021331},{"num":"1059","nombre":"González Catán","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Fernando Vila","regional":"Fernando Gualtieri","gerente":"Bonardi Erica","direccion":"Ruta 3 n° 14446, La Matanza","lat":-34.763558,"lon":-58.618841},{"num":"1060","nombre":"Fuerza Aérea Cba.","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"José Lazcano","regional":"Adrian Vinagre","gerente":"Gasparini Jorge Lucas","direccion":"Avda  Fuerza Aerea  Nº 4372 entre Av. Richardson y Av. Camilotti.","lat":-31.432014,"lon":-64.243991},{"num":"1061","nombre":"Junín","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Diego Mendez","regional":"Fernando Gualtieri","gerente":"Nicolas Bustos","direccion":"Ruta 7 Km. 260.9 (y  Sargento cabral) ( CP 6000 )","lat":-34.597411,"lon":-60.975084},{"num":"1067","nombre":"San Martín Mendoza","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Carlos Amaya","regional":"Adrian Vinagre","gerente":"Silvana Fiochetti","direccion":"Av. Boulogne Sur Mer 700. San Martin – Mendoza ( CP 5570 )","lat":-33.079826,"lon":-68.482803},{"num":"1068","nombre":"Mendoza Benegas","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Pablo Madami","regional":"Adrian Vinagre","gerente":"Max Godoy","direccion":"Calle San Martin Sur 2575 y Calle Laguna del Diamante – Godoy Cruz – MENDOZA.","lat":-32.951366,"lon":-68.858596},{"num":"1074","nombre":"Goya","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Veronica Acebal","regional":"Luciano Budman","gerente":"Walter Gonzalez","direccion":"Av. Sarmiento 721 esquina calle soto ( CP 3450 )","lat":-29.154703,"lon":-59.272544},{"num":"1075","nombre":"Fuerza Aérea Salta","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Raúl Ortiz","regional":"Luciano Budman","gerente":"Dora Amelia Heredia","direccion":"Av. Fuerza Aerea S/N esquina Aguas Blancas   CP: 4400","lat":-24.7261,"lon":-65.403373},{"num":"1076","nombre":"Lomas de Zamora","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Daniel Topham","regional":"Rafael Ghirardi","gerente":"Fabian Velazquez","direccion":"Cerrito S/N esquina R. Dario (CP: 1832)","lat":-34.756839,"lon":-58.377738},{"num":"1077","nombre":"Gral. Pico","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Ceferino San Juan","regional":"Rafael Ghirardi","gerente":"Matias pereyra","direccion":"Av. 319 y Calle 308 – COLECTORA Ruta Nac 101 – Gral Pico – LA PAMPA","lat":-35.662563,"lon":-63.783195},{"num":"1078","nombre":"Tartagal","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Miguel Villanueva","regional":"Luciano Budman","gerente":"Arturo Landrel","direccion":"Paraguay y ruta Nac. Nº34 – Tartagal - Salta  (CP 4560)","lat":-22.513508,"lon":-63.792131},{"num":"1080","nombre":"Santiago del Estero Sur","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Mariano Kucich","regional":"Luciano Budman","gerente":"Llugdar Cristian","direccion":"Colectora Circunvalación y Av. Contreras","lat":-27.82813,"lon":-64.270004},{"num":"1081","nombre":"Rawson San Juan","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Alejandro Cohen","regional":"Adrian Vinagre","gerente":"Maria Valeria Paez","direccion":"Av. Doctor Ortega y Las Vicentinas – Rawson – SAN JUAN","lat":-31.575672,"lon":-68.543724},{"num":"1082","nombre":"Tucumán Av. Jujuy","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Marcos Bustos","regional":"Luciano Budman","gerente":"Omar Sanchez","direccion":"Av. Jujuy entre Democracia y P. Fernandez","lat":-26.866111,"lon":-65.221107},{"num":"1084","nombre":"San Vicente","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Nicolas Castiglione","director":"Diego Beraldi","regional":"Rafael Ghirardi","gerente":"Monica Peralta","direccion":"Av. 25 de mayo 37 San Vicente","lat":-35.02346,"lon":-58.423526},{"num":"1085","nombre":"Corrientes Av. Maipú","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Maria Esther Leclercq","regional":"Luciano Budman","gerente":"Lucas Ortigosa","direccion":"Av.Maipu y Los Condores","lat":-27.500421,"lon":-58.812722},{"num":"1086","nombre":"Formosa 2","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Victor Caballero","regional":"Luciano Budman","gerente":"Cabeza Alicia","direccion":"Av.Maradona y Somacal","lat":-26.151456,"lon":-58.161308},{"num":"1087","nombre":"Pilar","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Raul Salazar","regional":"Fernando Gualtieri","gerente":"vacante","direccion":"Colectora Acceso Norte N°51500, Localidad de Pilar, Partido de Pilar, Provincia de Buenos Aires","lat":-34.448738,"lon":-58.885978},{"num":"1088","nombre":"Tucumán Concepción","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"TBD","regional":"Luciano Budman","gerente":"walter suarez","direccion":"Av Güemes y Av Francia – Concepción – Pcia de Tucumán.","lat":-27.35041,"lon":-65.589111},{"num":"1092","nombre":"San Juan Norte","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Carmen Salazar","regional":"Adrian Vinagre","gerente":"Laura Guidet","direccion":"Av. Benavidez 1050 esq. Colón. Cdad de San Juan (CP 5413)","lat":-31.51111,"lon":-68.546211},{"num":"1093","nombre":"Comodoro 2","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Eduardo Barbero","regional":"Rafael Ghirardi","gerente":"Gustavo Gonzalez","direccion":"Ruta nacional 3, Km. 4, frente a avenida Tehuelches, barrio 25 de Mayo, Comodoro Rivadavia.","lat":-45.827236,"lon":-67.467628},{"num":"1096","nombre":"Caseros","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Roxana Loizzo","regional":"Fernando Gualtieri","gerente":"Carmen Cruz","direccion":"Av.Gral Justo Jose de Urquiza 4320, Caseros, Provincia de Buenos Aires","lat":-34.60665,"lon":-58.555198},{"num":"1097","nombre":"Donato Álvarez","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Javier Jaime Alonso","regional":"Adrian Vinagre","gerente":"Fabian Franco","direccion":"Av. Donato Alvarez (altura 8600, según informe de transito)  entre las calles Tipayante y Malalco – Barrio UOCRA – Ciudad de Córdoba","lat":-31.32402,"lon":-64.269118},{"num":"1098","nombre":"Sáenz Peña. Chaco","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Oscar Goicoechea","regional":"Luciano Budman","gerente":"Daniel regnet","direccion":"Av. J.M. de Rosas y A. Illia, Roque Sáenz Peña, Chaco","lat":-26.791,"lon":-60.44},{"num":"1099","nombre":"Posadas 2","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Lurdes Delgado","regional":"Luciano Budman","gerente":"NESTOR OLEXEN","direccion":"Av . Alicia Moreau de Justo y Av. Cabo de Hornos , ciudad de Posadas , Provincia de Misiones .","lat":-27.425611,"lon":-55.933212},{"num":"1100","nombre":"Santa Rosa","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"César Maldonado","regional":"Rafael Ghirardi","gerente":"Martin Verger","direccion":"Colectora de Av. Pte Peron y Ultracán.-","lat":-36.634811,"lon":-64.315208},{"num":"1106","nombre":"Tucuman Ejercito Nor.","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Daniela Patiño","regional":"Luciano Budman","gerente":"Luis Santucho","direccion":"Ejercito del Norte 2324 (CP 4000)","lat":-26.794185,"lon":-65.224521},{"num":"1108","nombre":"Puerto Madryn","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Leonardo Rossi","regional":"Rafael Ghirardi","gerente":"Pablo Cocco","direccion":"Juan B Justo 1885 (CP 9120)","lat":-42.784827,"lon":-65.033376},{"num":"1110","nombre":"Claypole","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Rodolfo hernandez","regional":"Rafael Ghirardi","gerente":"Roberto Rojas","direccion":"LACAZE 3963. CLAYPOLE","lat":-34.809112,"lon":-58.34391},{"num":"1111","nombre":"San Pedro Jujuy","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Martin Arancibia","regional":"Luciano Budman","gerente":"Soledad Ibañez Alvarado","direccion":"San Gabriel 712 (CP 4500)","lat":-24.22491,"lon":-64.860412},{"num":"1114","nombre":"Clorinda","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Jorge Daniel Medina","regional":"Luciano Budman","gerente":"Ariel Villalba","direccion":"Av. Tucumán 201 y Bme. Mitre (CP 3610),Clorinda, Formosa","lat":-25.287482,"lon":-57.723763},{"num":"1115","nombre":"General Roca","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Andres Cid","regional":"Rafael Ghirardi","gerente":"SILVIA JUAREZ","direccion":"Chulavista 1550, Gral Roca, Rio Negro","lat":-39.036712,"lon":-67.588813},{"num":"1116","nombre":"Morón","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Cynthia Cossin","regional":"Fernando Gualtieri","gerente":"Oscar Godoy","direccion":"Don Bosco  5635 Morón - CP (1708)","lat":-34.689084,"lon":-58.626244},{"num":"1119","nombre":"Moreno Derqui","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Matias Flores","regional":"Fernando Gualtieri","gerente":"Ezequiel Jaime","direccion":"Av. Derqui 5602, Cuartel V, Moreno","lat":-34.551,"lon":-58.816},{"num":"2997","nombre":"Constituyentes","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Marcelo Albanito","regional":"Fernando Gualtieri","gerente":"Marcela Parissi","direccion":"Av. de los Constituyentes 6020, 1431","lat":-34.572793,"lon":-58.5078},{"num":"2998","nombre":"San Justo","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Alexander Vaccaro","regional":"Fernando Gualtieri","gerente":"Walter Roman","direccion":"Brig.Gral.Juan Manuel de Rosas 3990, San Justo ( B1754FUX )","lat":-34.68584,"lon":-58.555326},{"num":"2999","nombre":"Avellaneda","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Walter J. Reinoso","regional":"Rafael Ghirardi","gerente":"Cecilia Acevedo","direccion":"Av.Guemes 861, Avellaneda ( B1873BOG )","lat":-34.677509,"lon":-58.366668},{"num":"3601","nombre":"La Plata","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Marcos Guardiola","regional":"Rafael Ghirardi","gerente":"Cristian Iglesias","direccion":"Camino Centenario 1876, La Plata ( B1900GBA )","lat":-34.89049,"lon":-57.996848},{"num":"3602","nombre":"Bahía Blanca","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Mariano Mendez","regional":"Rafael Ghirardi","gerente":"Cecilia Muñoz","direccion":"Av. Sarmiento 4114, Bahía Blanca ( B8002HGJ )","lat":-38.697583,"lon":-62.243096},{"num":"3603","nombre":"Santa Fé","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Fernando Maffone","regional":"Adrian Vinagre","gerente":"Carolina Bracamonte","direccion":"Ruta Nacional 168, km473.6, Santa Fe (3000)","lat":-31.642111,"lon":-60.65644},{"num":"3604","nombre":"Paraná","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Marcelo Puentes","regional":"Adrian Vinagre","gerente":"Valeria warlet","direccion":"Anacleto Medina 319 - Paraná, Entre Ríos (E3100DFG)","lat":-31.721006,"lon":-60.547111},{"num":"3605","nombre":"Córdoba Oeste","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Emiliano Vergara Hoffman","regional":"Adrian Vinagre","gerente":"David Altamirano","direccion":"Colón 6051, Córdoba ( X5003DFS )","lat":-31.395535,"lon":-64.259731},{"num":"3606","nombre":"Córdoba Este","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Norbeto Oliva","regional":"Adrian Vinagre","gerente":"Analia Bustos","direccion":"Mauricio Yadarola 1699, Córdoba ( 5000 )","lat":-31.391634,"lon":-64.158483},{"num":"3608","nombre":"Neuquén","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Rafael Orellana","regional":"Rafael Ghirardi","gerente":"Jorge Serrano","direccion":"Perticone 1255, Neuquén","lat":-38.952,"lon":-68.059},{"num":"3613","nombre":"Guaymallén","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Gaston Nusdeo","regional":"Adrian Vinagre","gerente":"Javier Porra","direccion":"Moldes 1023 y Acceso Sur - Dorrego, Guaymallén ( M5626EAS )","lat":-32.91451,"lon":-68.825287},{"num":"4001","nombre":"Campana","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Nicolas Castiglione","director":"Valeria Calderon","regional":"Fernando Gualtieri","gerente":"Giselle Ojeda","direccion":"Av. Tte. Gral. Juan Domingo Perón 34","lat":-34.177628,"lon":-58.943416}];
+var TS = JSON.parse('[{"num":"1002","nombre":"Rio Cuarto","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Adri\u00e1n Carignano","gerente":"Mariana Miatello","direccion":"Juan B. Justo 2052, R\u00edo Cuarto, C\u00f3rdoba ( X5806ELB )","lat":-33.13116,"lon":-64.3824,"bandas":"SI","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1003","nombre":"San Luis","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Omar Luna","gerente":"Oscar Oliveri","direccion":"Av del Fundador 1450 y Ruta 7, San Luis ( 5700 )","lat":-33.296619,"lon":-66.303039,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1004","nombre":"San Fernando","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Edgardo Ariosti","gerente":"Silvia Cecconato","direccion":"Cno.Bancalari Boulogne s/n entre 202 y Uruguay, S. Fernando (1646)","lat":-34.484169,"lon":-58.595829,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1005","nombre":"Las Heras Mendoza","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Sonia Cocconi","gerente":"Gerardo Carrizo","direccion":"Boulogne Sur Mer s/n y Regalado Olguin, Las Heras Mendoza ( 5500 )","lat":-32.850687,"lon":-68.858646,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1006","nombre":"San Juan","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Fabi\u00e1n Contreras","gerente":"Oscar Menendez","direccion":"Jos\u00e9 Ignacio de la Roza Oeste 806, Rivadavia, San Juan ( J5402DCV )","lat":-31.541112,"lon":-68.573364,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1007","nombre":"La Rioja","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"TBD","gerente":"Castro Eduardo Luis","direccion":"Av.Ortiz de Ocampo 1127 y Ej\u00e9rcito Argentino, La Rioja (5300)","lat":-29.428056,"lon":-66.862434,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1008","nombre":"Corrientes","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Pedro Nardacchione","director":"Horacio Tupponi","gerente":"Cristian Baez","direccion":"Gregorio Pomar 840, Corrientes ( W3402CBJ )","lat":-27.47005,"lon":-58.805927,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1010","nombre":"Cordoba Sur","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Sergio Volpe","gerente":"Mario Cabrera","direccion":"Horacio Ju\u00e1rez 4443, X5011CZG C\u00f3rdoba","lat":-31.466986,"lon":-64.162452,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1011","nombre":"Salta","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Cristian A. Pantano","gerente":"Gladys Negro","direccion":"Av Paraguay 1450 y Av B\u00e9lgica, Salta ( 4400 )","lat":-24.804821,"lon":-65.420784,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1012","nombre":"Santiago","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Luis Remedi","gerente":"VICENTE CAMPOS","direccion":"Av Belgrano Sud 2663 (esq.Suarez), Bo.Ramon Carrillo, Sgo del Estero ( G4200ACA )","lat":-27.809677,"lon":-64.249649,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1013","nombre":"Tigre","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Sebastian Acevey","gerente":"DEBORA UBEDA","direccion":"Colombia 1212, El Talar, Tigre ( CP1617 )","lat":-34.47377,"lon":-58.66267,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1014","nombre":"Lujan","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Pedro Nardacchione","director":"Alejandro Alberini","gerente":"Sergio Sauco","direccion":"Payr\u00f3 198, Barrio Juan 23, Luj\u00e1n, Pcia. De Bs.As ( CP 6700 )","lat":-34.548107,"lon":-59.112037,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1015","nombre":"Maip\u00fa","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Leandro Martin Ceballos","gerente":"Nadia Gulli","direccion":"Maza 470, Maip\u00fa - Mendoza (CP M5515)","lat":-32.978813,"lon":-68.797142,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1016","nombre":"HC Avellaneda 2","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Fernando Santa Cruz","gerente":"Cristian Rificci","direccion":"Autopista BsAs-La Plata , km 9 Sarand\u00ed, Bs As (1870)","lat":-34.678569,"lon":-58.334423,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1017","nombre":"Tablada","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Dario Valiente","gerente":"Yesica Diaz","direccion":"Monse\u00f1or Bufano 6050, La Tablada ( B7163XAA )","lat":-34.701454,"lon":-58.534011,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1018","nombre":"Quilmes","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Andres Mosciaro","gerente":"Jesica Salvatierra","direccion":"Av Calchaqu\u00ed 700, Quilmes ( B1879ESQ )","lat":-34.733394,"lon":-58.293617,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1020","nombre":"Tucum\u00e1n","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Pedro Nardacchione","director":"Jes\u00fas Bravo","gerente":"Ivan David Visa","direccion":"Av.Camino del Per\u00fa 950 ( CP4000 ) S M de Tucum\u00e1n","lat":-26.804676,"lon":-65.26001,"bandas":"SI","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1021","nombre":"Neuqu\u00e9n 2","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Juan Pablo Seletti","gerente":"Marcela Riveros","direccion":"Av.Belgrano 2735 ( CP8300 ), Neuqu\u00e9n","lat":-38.950523,"lon":-68.097285,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1022","nombre":"Bariloche","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Hugo Adrian Frascarelli","gerente":"Silvia Cifuentes","direccion":"Av. J.Hermann e/Pasaje Gutierrez y Calfu-Co, Bariloche, Rio Negro ( CP 8400 )","lat":-41.160854,"lon":-71.319145,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1023","nombre":"La Pampa","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Cesar Maldonado","gerente":"Vanesa Fernandez","direccion":"Av. Circunvalaci\u00f3n Santiago Marzo 1550, villa Alonso Norte, Santa Rosa  (CP 6300)","lat":-36.603195,"lon":-64.270973,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1024","nombre":"Formosa","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Juan Juri","gerente":"Mariana Lemos","direccion":"Av. Gunitsky 3636 entre Av. J. de Pueyrred\u00f3n y Brandsen (CP 3600)","lat":-26.19504,"lon":-58.203313,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1026","nombre":"Catamarca","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Eduardo Boris","gerente":"Jose Castro","direccion":"Av.Acosta Villafa\u00f1e 2420, Catamarca( CP 4700 )","lat":-28.467222,"lon":-65.755218,"bandas":"SI","multipick":"NO","envios":"NO","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1027","nombre":"Mataderos","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Pedro Nardacchione","director":"Miguel Verge","gerente":"Andrea patricia Gularte","direccion":"Eva Per\u00f3n 5526 y Miralla, Capital Federal( CP 1440 )","lat":-34.661576,"lon":-58.484237,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1028","nombre":"Alte Brown","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Malva Cantero","gerente":"Martin Canis","direccion":"Av. Espora 2074 , Partido de Alte Brown( CP 1846 )","lat":-34.816631,"lon":-58.389896,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"GM"},{"num":"1029","nombre":"Moreno","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Silvia Gauna","gerente":"Noelia Vallejos","direccion":"Av. Julio Argentino Roca al 3500 entre Santos Dumont y Vasco Da Gamma, a 3 cuadras de Av. Del Libertador (Ruta 23), Partido de Moreno, GBA ( CP 1744 )","lat":-34.588063,"lon":-58.745112,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"GM"},{"num":"1030","nombre":"Jos\u00e9 C Paz","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Pedro Nardacchione","director":"Emmanuel Corvalan","gerente":"Alberto Pereira","direccion":"Av. Gaspar Campos 5690 entre Juan D\u00edaz de Sol\u00eds y Pueyrred\u00f3n, Partido de Jos\u00e9 C. Paz ( CP 1665 )","lat":-34.530126,"lon":-58.749982,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1031","nombre":"Jujuy","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Erica Hal","gerente":"Gonzalo Toledo","direccion":"Riobamba y Ruta 9, San Salvador de Jujuy ( CP 4600 )","lat":-24.210677,"lon":-65.288497,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1032","nombre":"Malvinas","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Juan Silva","gerente":"Sonia trejo","direccion":"Av. Del Sesquincentenario,  Malvinas Argentinas, GBA ( CP 1846 )","lat":-34.499103,"lon":-58.710798,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1033","nombre":"R\u00edo Sal\u00ed","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Jos\u00e9 Jaldo","gerente":"Ivan sanchez","direccion":"Guatemala y San Mart\u00edn, Banda Rio Sali, Tucuman ( CP 4109 )","lat":-26.837785,"lon":-65.16938,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1035","nombre":"3 de febrero","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"TBD","gerente":"Gisela Casimiro","direccion":"Av. Presidente Juan Domingo Per\u00f3n N\u00ba9150 ( CP B1687AEV )","lat":-34.575111,"lon":-58.611389,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1036","nombre":"Moreno Shopping","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Pedro Nardacchione","director":"Fernanda Laff\u00f3n","gerente":"Sergio Gimenez","direccion":"Martinez Melo 151 (Es la entrada al shopping y estacionamiento) ( CP B1744FDC )","lat":-34.651918,"lon":-58.792474,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1037","nombre":"San Martin","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Nicolas Castiglione","director":"Daniel Gomez","gerente":"Roberto Gil","direccion":"Estrada 3072 / 82 / 84 ( CP 1650 )","lat":-34.5741,"lon":-58.530495,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1038","nombre":"Cipolletti","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Adri\u00e1n Gallego","gerente":"Victor Norambuena","direccion":"Calle Bolivia 1169 esq. Primeros Pobladores (951), Ciudad de Cipolletti, Prov. De R\u00edo Negro ( CP 8324 )","lat":-38.931846,"lon":-67.984138,"bandas":"NO","multipick":"NO","envios":"SI","hd":"NO","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1039","nombre":"Paran\u00e1 2","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Carlos Campos","gerente":"Karina Sosa","direccion":"Av. Blas Parera 1152  ( CP3100 )","lat":-31.74191,"lon":-60.493869,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1042","nombre":"Trelew","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Hugo Rispero","gerente":"Carmen Rocha","direccion":"Av. Peron Ruta N\u00b0719 (CP 9102)","lat":-43.249282,"lon":-65.290804,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1043","nombre":"Laferrere","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Victor Chantada","gerente":"Carlos Roman","direccion":"Ruta 21 y Carlos Casares, Laferrere, PBA ( CP 1757 )","lat":-34.74189,"lon":-58.564317,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1044","nombre":"Hurlingham Villegas","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Pedro Nardacchione","director":"Nelson Otero","gerente":"Mariana Coronado","direccion":"Av. Villegas 2750 ( esquina Malaspina )","lat":-34.587223,"lon":-58.662776,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1045","nombre":"Hurlingham Vergara","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Pedro Nardacchione","director":"Claudio Assiari","gerente":"Carla Beltrando","direccion":"Av. Vergara 2950","lat":-34.607497,"lon":-58.635181,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1046","nombre":"Pergamino","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Nicolas Castiglione","director":"Gabriel Humberto Monta\u00f1o","gerente":"Ojeda Ana Laura","direccion":"Boulevard Dardo Rocha N\u00ba 280, entre San luis y Catamarca","lat":-33.894012,"lon":-60.564921,"bandas":"NO","multipick":"NO","envios":"SI","hd":"NO","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1050","nombre":"Lan\u00fas","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Lorena Paz","gerente":"Sergio Ovejero","direccion":"Boulevard de los Italianos 321, entre calles Belgrano y Donato Alvarez ( CP 1824 )","lat":-34.718809,"lon":-58.351975,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1051","nombre":"Posadas","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Diego Acu\u00f1a","gerente":"Marcela Espindola","direccion":"Av Tambor de Tacuari 5158 / 5198 \u00f3 Zapiola 2149  ( CP 3300 )","lat":-27.367221,"lon":-55.927509,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1052","nombre":"Oran","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Jorgelina Miranda","gerente":"Monica Figueroa","direccion":"Av.Pueyrredon y Av.Palacios , Oran ( CP 4530 ) Salta","lat":-23.144838,"lon":-64.326263,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1053","nombre":"Viedma","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Hugo Carro","gerente":"Maxi Cravotta","direccion":"Tierra del Fuego 514 entre Calle Colectora de Av. Cardenal Cagliero y Corrientes, Pcia. De R\u00edo Negro ( CP 8500 )","lat":-40.824867,"lon":-62.984272,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1054","nombre":"Olavarr\u00eda","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Nahuel Perez","gerente":"Andrea Blando","direccion":"Av. Rivadavia 4370, Olavarria ( CP B7400CVP )","lat":-36.880767,"lon":-60.304042,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1055","nombre":"Villa Mercedes (San Luis)","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Nicol\u00e1s Giovannini","gerente":"Marcela Monje","direccion":"Av Juan Domingo Peron 825, Pcia. De San Luis ( CP 5730 )","lat":-33.680309,"lon":-65.452308,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1056","nombre":"Villa Nueva","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Nieves Rodriguez","gerente":"Raquel Irene Farias","direccion":"Av. Carranza 980 ( entre calle Lima y Costanera ) Villanueva, Pcia. De C\u00f3rdoba (CP 5903)","lat":-32.423605,"lon":-63.243978,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1057","nombre":"Comodoro Sur","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Mariano Reyes","gerente":"Valeria Pilar","direccion":"Chile y Girolamo, Comodoro Rivadavia, Chubut ( CP 9000 )","lat":-45.883474,"lon":-67.525299,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1058","nombre":"Resistencia","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Pedro Nardacchione","director":"Diego S\u00e1nchez","gerente":"Luz Acosta Recchia","direccion":"Rta. 11 y Marconi, Pcia. Del Chaco ( CP 3500 )","lat":-27.446553,"lon":-59.021331,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1059","nombre":"Gonz\u00e1lez Cat\u00e1n","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Fernando Vila","gerente":"Bonardi Erica","direccion":"Ruta 3 n\u00b0 14446, La Matanza","lat":-34.763558,"lon":-58.618841,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"GM"},{"num":"1060","nombre":"Fuerza A\u00e9rea Cba.","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Jos\u00e9 Lazcano","gerente":"Gasparini Jorge Lucas","direccion":"Avda\u00a0 Fuerza Aerea \u00a0N\u00ba 4372 entre Av. Richardson y Av. Camilotti.","lat":-31.432014,"lon":-64.243991,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1061","nombre":"Jun\u00edn","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Diego Mendez","gerente":"Nicolas Bustos","direccion":"Ruta 7 Km. 260.9 (y  Sargento cabral) ( CP 6000 )","lat":-34.597411,"lon":-60.975084,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1067","nombre":"San Mart\u00edn Mendoza","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Carlos Amaya","gerente":"Silvana Fiochetti","direccion":"Av. Boulogne Sur Mer 700. San Martin \u2013 Mendoza ( CP 5570 )","lat":-33.079826,"lon":-68.482803,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1068","nombre":"Mendoza Benegas","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Pablo Madami","gerente":"Max Godoy","direccion":"Calle San Martin Sur 2575 y Calle Laguna del Diamante \u2013 Godoy Cruz \u2013 MENDOZA.","lat":-32.951366,"lon":-68.858596,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1074","nombre":"Goya","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Veronica Acebal","gerente":"Walter Gonzalez","direccion":"Av. Sarmiento 721 esquina calle soto ( CP 3450 )","lat":-29.154703,"lon":-59.272544,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1075","nombre":"Fuerza A\u00e9rea Salta","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Ra\u00fal Ortiz","gerente":"Dora Amelia Heredia","direccion":"Av. Fuerza Aerea S/N esquina Aguas Blancas   CP: 4400","lat":-24.7261,"lon":-65.403373,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1076","nombre":"Lomas de Zamora","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Daniel Topham","gerente":"Fabian Velazquez","direccion":"Cerrito S/N esquina R. Dario (CP: 1832)","lat":-34.756839,"lon":-58.377738,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1077","nombre":"Gral. Pico","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Ceferino San Juan","gerente":"Matias pereyra","direccion":"Av. 319 y Calle 308 \u2013 COLECTORA Ruta Nac 101 \u2013 Gral Pico \u2013 LA PAMPA","lat":-35.662563,"lon":-63.783195,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1078","nombre":"Tartagal","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Miguel Villanueva","gerente":"Arturo Landrel","direccion":"Paraguay y ruta Nac. N\u00ba34 \u2013 Tartagal - Salta  (CP 4560)","lat":-22.513508,"lon":-63.792131,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1080","nombre":"Santiago del Estero Sur","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Mariano Kucich","gerente":"Llugdar Cristian","direccion":"Colectora Circunvalaci\u00f3n y Av. Contreras","lat":-27.82813,"lon":-64.270004,"bandas":"SI","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1081","nombre":"Rawson San Juan","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Alejandro Cohen","gerente":"Maria Valeria Paez","direccion":"Av. Doctor Ortega y Las Vicentinas \u2013 Rawson \u2013 SAN JUAN","lat":-31.575672,"lon":-68.543724,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1082","nombre":"Tucum\u00e1n Av. Jujuy","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Marcos Bustos","gerente":"Omar Sanchez","direccion":"Av. Jujuy entre Democracia y P. Fernandez","lat":-26.866111,"lon":-65.221107,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1084","nombre":"San Vicente","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Nicolas Castiglione","director":"Diego Beraldi","gerente":"Monica Peralta","direccion":"Av. 25 de mayo 37 San Vicente","lat":-35.02346,"lon":-58.423526,"bandas":"NO","multipick":"NO","envios":"SI","hd":"NO","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1085","nombre":"Corrientes Av. Maip\u00fa","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Maria Esther Leclercq","gerente":"Lucas Ortigosa","direccion":"Av.Maipu y Los Condores","lat":-27.500421,"lon":-58.812722,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1086","nombre":"Formosa 2","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Victor Caballero","gerente":"Cabeza Alicia","direccion":"Av.Maradona y Somacal","lat":-26.151456,"lon":-58.161308,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1087","nombre":"Pilar","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Raul Salazar","gerente":"vacante","direccion":"Colectora Acceso Norte N\u00b051500, Localidad de Pilar, Partido de Pilar, Provincia de Buenos Aires","lat":-34.448738,"lon":-58.885978,"bandas":"SI","multipick":"SI","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1088","nombre":"Tucum\u00e1n Concepci\u00f3n","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"TBD","gerente":"walter suarez","direccion":"Av G\u00fcemes y Av Francia \u2013 Concepci\u00f3n \u2013 Pcia de Tucum\u00e1n.","lat":-27.35041,"lon":-65.589111,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1092","nombre":"San Juan Norte","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Carmen Salazar","gerente":"Laura Guidet","direccion":"Av. Benavidez 1050 esq. Col\u00f3n. Cdad de San Juan (CP 5413)","lat":-31.51111,"lon":-68.546211,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1093","nombre":"Comodoro 2","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Eduardo Barbero","gerente":"Gustavo Gonzalez","direccion":"Ruta nacional 3, Km. 4, frente a avenida Tehuelches, barrio 25 de Mayo, Comodoro Rivadavia.","lat":-45.827236,"lon":-67.467628,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1096","nombre":"Caseros","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Roxana Loizzo","gerente":"Carmen Cruz","direccion":"Av.Gral Justo Jose de Urquiza 4320, Caseros, Provincia de Buenos Aires","lat":-34.60665,"lon":-58.555198,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1097","nombre":"Donato \u00c1lvarez","fmt":"CH","fmt_label":"Changomas","coordinador":"German Haller","director":"Javier Jaime Alonso","gerente":"Fabian Franco","direccion":"Av. Donato Alvarez (altura 8600, seg\u00fan informe de transito)  entre las calles Tipayante y Malalco \u2013 Barrio UOCRA \u2013 Ciudad de C\u00f3rdoba","lat":-31.32402,"lon":-64.269118,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1098","nombre":"S\u00e1enz Pe\u00f1a. Chaco","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Oscar Goicoechea","gerente":"Daniel regnet","direccion":"Interseccion de las Av. Juan Manuel de Rosas (101) y calle Arturo Illia (128 ) , ciudad de Roque Saenz Pe\u00f1a , Pcia Chaco","lat":-26.791,"lon":-60.44,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1099","nombre":"Posadas 2","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Lurdes Delgado","gerente":"NESTOR OLEXEN","direccion":"Av . Alicia Moreau de Justo y Av. Cabo de Hornos , ciudad de Posadas , Provincia de Misiones .","lat":-27.425611,"lon":-55.933212,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1100","nombre":"Santa Rosa","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"C\u00e9sar Maldonado","gerente":"Martin Verger","direccion":"Colectora de Av. Pte Peron y Ultrac\u00e1n.-","lat":-36.634811,"lon":-64.315208,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1106","nombre":"Tucuman Ejercito Nor.","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Daniela Pati\u00f1o","gerente":"Luis Santucho","direccion":"Ejercito del Norte 2324 (CP 4000)","lat":-26.794185,"lon":-65.224521,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1108","nombre":"Puerto Madryn","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Leonardo Rossi","gerente":"Pablo Cocco","direccion":"Juan B Justo 1885 (CP 9120)","lat":-42.784827,"lon":-65.033376,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"},{"num":"1110","nombre":"Claypole","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Rodolfo hernandez","gerente":"Roberto Rojas","direccion":"LACAZE 3963. CLAYPOLE","lat":-34.809112,"lon":-58.34391,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"GM"},{"num":"1111","nombre":"San Pedro Jujuy","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Martin Arancibia","gerente":"Soledad Iba\u00f1ez Alvarado","direccion":"San Gabriel 712 (CP 4500)","lat":-24.22491,"lon":-64.860412,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1114","nombre":"Clorinda","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Jorge Daniel Medina","gerente":"Ariel Villalba","direccion":"Av. Tucum\u00e1n 201 y Bme. Mitre (CP 3610),Clorinda, Formosa","lat":-25.287482,"lon":-57.723763,"bandas":"NO","multipick":"NO","envios":"NO","hd":"NO","rt":"SI","pickup":"NO","form":"GM"},{"num":"1115","nombre":"General Roca","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Andres Cid","gerente":"SILVIA JUAREZ","direccion":"Chulavista 1550, Gral Roca, Rio Negro","lat":-39.036712,"lon":-67.588813,"bandas":"NO","multipick":"NO","envios":"SI","hd":"NO","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"1116","nombre":"Mor\u00f3n","fmt":"CH","fmt_label":"Changomas","coordinador":"Nicolas Castiglione","director":"Cynthia Cossin","gerente":"Oscar Godoy","direccion":"Don Bosco  5635 Mor\u00f3n - CP (1708)","lat":-34.689084,"lon":-58.626244,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"GM"},{"num":"1119","nombre":"Moreno Derqui","fmt":"CH","fmt_label":"Changomas","coordinador":"Pedro Nardacchione","director":"Matias Flores","gerente":"Ezequiel Jaime","direccion":"Av. Derqui 5602 - Cuartel V  - Moreno","lat":-34.551,"lon":-58.816,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"GM"},{"num":"2997","nombre":"Constituyentes","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Marcelo Albanito","gerente":"Marcela Parissi","direccion":"Av. de los Constituyentes 6020, 1431","lat":-34.572793,"lon":-58.5078,"bandas":"SI","multipick":"SI","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"2998","nombre":"San Justo","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Alexander Vaccaro","gerente":"Walter Roman","direccion":"Brig.Gral.Juan Manuel de Rosas 3990, San Justo ( B1754FUX )","lat":-34.68584,"lon":-58.555326,"bandas":"SI","multipick":"SI","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"2999","nombre":"Avellaneda","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Walter J. Reinoso","gerente":"Cecilia Acevedo","direccion":"Av.Guemes 861, Avellaneda ( B1873BOG )","lat":-34.677509,"lon":-58.366668,"bandas":"SI","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"3601","nombre":"La Plata","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Marcos Guardiola","gerente":"Cristian Iglesias","direccion":"Camino Centenario 1876, La Plata ( B1900GBA )","lat":-34.89049,"lon":-57.996848,"bandas":"SI","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"3602","nombre":"Bah\u00eda Blanca","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Mariano Mendez","gerente":"Cecilia Mu\u00f1oz","direccion":"Av. Sarmiento 4114, Bah\u00eda Blanca ( B8002HGJ )","lat":-38.697583,"lon":-62.243096,"bandas":"SI","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"3603","nombre":"Santa F\u00e9","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Fernando Maffone","gerente":"Carolina Bracamonte","direccion":"Ruta Nacional 168, km473.6, Santa Fe (3000)","lat":-31.642111,"lon":-60.65644,"bandas":"SI","multipick":"SI","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"3604","nombre":"Paran\u00e1","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Marcelo Puentes","gerente":"Valeria warlet","direccion":"Anacleto Medina 319 - Paran\u00e1, Entre R\u00edos (E3100DFG)","lat":-31.721006,"lon":-60.547111,"bandas":"SI","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"3605","nombre":"C\u00f3rdoba Oeste","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Emiliano Vergara Hoffman","gerente":"David Altamirano","direccion":"Col\u00f3n 6051, C\u00f3rdoba ( X5003DFS )","lat":-31.395535,"lon":-64.259731,"bandas":"SI","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"3606","nombre":"C\u00f3rdoba Este","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Norbeto Oliva","gerente":"Analia Bustos","direccion":"Mauricio Yadarola 1699, C\u00f3rdoba ( 5000 )","lat":-31.391634,"lon":-64.158483,"bandas":"SI","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"3608","nombre":"Neuqu\u00e9n","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"Nicolas Castiglione","director":"Rafael Orellana","gerente":"Jorge Serrano","direccion":"Perticone 1255, Neuqu\u00e9n ( 8300 )","lat":-38.952,"lon":-68.059,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"3613","nombre":"Guaymall\u00e9n","fmt":"HC","fmt_label":"Hiper Changomas","coordinador":"German Haller","director":"Gaston Nusdeo","gerente":"Javier Porra","direccion":"Moldes 1023 y Acceso Sur - Dorrego, Guaymall\u00e9n ( M5626EAS )","lat":-32.91451,"lon":-68.825287,"bandas":"SI","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"SI","form":"Full 1"},{"num":"4001","nombre":"Campana","fmt":"SC","fmt_label":"Super Changomas","coordinador":"Nicolas Castiglione","director":"Valeria Calderon","gerente":"Giselle Ojeda","direccion":"Av. Tte. Gral. Juan Domingo Per\u00f3n 34","lat":-34.177628,"lon":-58.943416,"bandas":"NO","multipick":"NO","envios":"SI","hd":"SI","rt":"SI","pickup":"NO","form":"Full 2"}]');
+var CC = {"German Haller":{bg:"#E2EFDA",fg:"#375623"},"Nicolas Castiglione":{bg:"#DDEBF7",fg:"#1F3864"},"Pedro Nardacchione":{bg:"#FCE4D6",fg:"#833C00"}};
+var FC = {HC:{bg:"#C6EFCE",fg:"#375623"},CH:{bg:"#DDEBF7",fg:"#1F3864"},SC:{bg:"#FCE4D6",fg:"#833C00"}};
+var EC = [{k:"hd",l:"Home Delivery"},{k:"rt",l:"Retiro Tienda"},{k:"pickup",l:"Pick Up"},{k:"envios",l:"Env\u00edos Tienda"},{k:"bandas",l:"Bandas 1hs"},{k:"multipick",l:"Multipicking"}];
 
-const CC = {
-  "German Haller":      {bg:"#E2EFDA", fg:"#375623"},
-  "Nicolas Castiglione":{bg:"#DDEBF7", fg:"#1F3864"},
-  "Pedro Nardacchione": {bg:"#FCE4D6", fg:"#833C00"}
-};
-const FC = {
-  HC:{bg:"#C6EFCE",fg:"#375623"},
-  CH:{bg:"#DDEBF7",fg:"#1F3864"},
-  SC:{bg:"#FCE4D6",fg:"#833C00"}
-};
+var mainMap=null,miniInst=null,psInst=null,markers=[],current=null;
 
-let mainMap = null;
-let miniMapInst = null;
-let psMapInst = null;
-let markers = [];
-let current = null;
-let vis = TS;
-
-function icon(t, active) {
-  const c = CC[t.coordinador] || {bg:"#eee", fg:"#555"};
-  const sz = t.fmt === "HC" ? 18 : t.fmt === "SC" ? 12 : 14;
-  const br = t.fmt === "SC" ? "3px" : "50%";
-  const bw = t.fmt === "HC" ? 3 : 2;
-  const bc = active ? "#E07B00" : c.fg;
-  return L.divIcon({
-    className: "",
-    html: `<div style="width:${sz}px;height:${sz}px;border-radius:${br};background:${c.bg};border:${bw}px solid ${bc};box-sizing:border-box;"></div>`,
-    iconSize: [sz, sz],
-    iconAnchor: [sz/2, sz/2]
-  });
+function mkIcon(t,active){
+  var c=CC[t.coordinador]||{bg:"#eee",fg:"#555"};
+  var sz=t.fmt==="HC"?18:t.fmt==="SC"?12:14;
+  var br=t.fmt==="SC"?"3px":"50%";
+  var bw=t.fmt==="HC"?3:2;
+  var bc=active?"#E07B00":c.fg;
+  return L.divIcon({className:"",html:"<div style='width:"+sz+"px;height:"+sz+"px;border-radius:"+br+";background:"+c.bg+";border:"+bw+"px solid "+bc+";box-sizing:border-box;'></div>",iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
 }
 
-function initMainMap() {
-  mainMap = L.map("map-container", {center: [-36, -64], zoom: 4});
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap", maxZoom: 19
-  }).addTo(mainMap);
-  renderMarkers(TS);
-  renderList(TS);
-}
-
-function renderMarkers(list) {
-  markers.forEach(m => m.remove());
-  markers = [];
-  list.forEach(t => {
-    if (!t.lat) return;
-    const m = L.marker([t.lat, t.lon], {icon: icon(t, false)});
-    m._num = t.num;
-    m.on("click", () => openStore(t));
-    m.addTo(mainMap);
-    markers.push(m);
-  });
-}
-
-function renderList(list) {
-  document.getElementById("badge").textContent = list.length + " tiendas";
-  const el = document.getElementById("listWrap");
-  if (!list.length) {
-    el.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:13px;">Sin resultados</div>';
-    return;
+function renderMarkers(list){
+  for(var i=0;i<markers.length;i++) markers[i].remove();
+  markers=[];
+  for(var i=0;i<list.length;i++){
+    (function(t){
+      if(!t.lat) return;
+      var m=L.marker([t.lat,t.lon],{icon:mkIcon(t,false)});
+      m._n=t.num; m.on("click",function(){openStore(t);}); m.addTo(mainMap); markers.push(m);
+    })(list[i]);
   }
-  el.innerHTML = list.map(t => {
-    const c = CC[t.coordinador] || {fg:"#888"};
-    return `<div class="item" id="i${t.num}" onclick="openStore(TS.find(x=>x.num==='${t.num}'))">
-      <div class="dot" style="background:${c.fg}"></div>
-      <div style="flex:1;min-width:0;">
-        <div class="iname">${t.nombre}</div>
-        <div class="isub">${t.num} · ${t.fmt_label}</div>
-      </div>
-    </div>`;
-  }).join("");
 }
 
-function filter() {
-  const q = document.getElementById("q").value.toLowerCase();
-  const fc = document.getElementById("fc").value;
-  const ff = document.getElementById("ff").value;
-  vis = TS.filter(t => {
-    const mq = !q || t.num.includes(q) || t.nombre.toLowerCase().includes(q) || t.coordinador.toLowerCase().includes(q);
-    return mq && (!fc || t.coordinador === fc) && (!ff || t.fmt === ff);
-  });
-  renderList(vis);
-  renderMarkers(vis);
+function renderList(list){
+  document.getElementById("badge").textContent=list.length+" tiendas";
+  var el=document.getElementById("listWrap");
+  if(!list.length){el.innerHTML="<div class='empty'>Sin resultados</div>";return;}
+  var html="";
+  for(var i=0;i<list.length;i++){
+    var t=list[i]; var c=CC[t.coordinador]||{fg:"#888"};
+    html+="<div class='item' id='i"+t.num+"' data-num='"+t.num+"'><div class='dot' style='background:"+c.fg+"'></div><div style='flex:1;min-width:0;'><div class='iname'>"+esc(t.nombre)+"</div><div class='isub'>"+t.num+" &middot; "+esc(t.fmt_label)+"</div></div></div>";
+  }
+  el.innerHTML=html;
+  var items=el.querySelectorAll(".item");
+  for(var i=0;i<items.length;i++){
+    (function(el){el.addEventListener("click",function(){var t=findT(el.getAttribute("data-num"));if(t)openStore(t);});})(items[i]);
+  }
 }
 
-function openStore(t) {
-  current = t;
-  // actualizar íconos
-  markers.forEach(m => {
-    const st = TS.find(x => x.num === m._num);
-    if (st) m.setIcon(icon(st, m._num === t.num));
-  });
-  // resaltar en lista
-  document.querySelectorAll(".item").forEach(i => i.classList.remove("active"));
-  const li = document.getElementById("i" + t.num);
-  if (li) { li.classList.add("active"); li.scrollIntoView({block:"nearest"}); }
-  // centrar mapa
-  if (t.lat) mainMap.setView([t.lat, t.lon], 13, {animate:true});
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function findT(num){for(var i=0;i<TS.length;i++)if(TS[i].num===num)return TS[i];return null;}
 
-  const c = CC[t.coordinador] || {bg:"#eee", fg:"#333"};
-  const f = FC[t.fmt] || {bg:"#eee", fg:"#333"};
+function applyFilter(){
+  var q=document.getElementById("q").value.toLowerCase();
+  var fc=document.getElementById("fc").value;
+  var ff=document.getElementById("ff").value;
+  var vis=[];
+  for(var i=0;i<TS.length;i++){
+    var t=TS[i];
+    var mq=!q||t.num.indexOf(q)>=0||t.nombre.toLowerCase().indexOf(q)>=0||t.coordinador.toLowerCase().indexOf(q)>=0||t.direccion.toLowerCase().indexOf(q)>=0;
+    if(mq&&(!fc||t.coordinador===fc)&&(!ff||t.fmt===ff))vis.push(t);
+  }
+  renderList(vis); renderMarkers(vis);
+}
 
-  // llenar popup
-  document.getElementById("cBadge").textContent = t.fmt;
-  document.getElementById("cBadge").style.background = f.bg;
-  document.getElementById("cBadge").style.color = f.fg;
-  document.getElementById("cTitle").textContent = t.num + " — " + t.nombre;
-  document.getElementById("cCoord").innerHTML = `<span class="fv-pill" style="background:${c.bg};color:${c.fg}">${t.coordinador}</span>`;
-  document.getElementById("cDir").textContent = t.director;
-  document.getElementById("cReg").textContent = t.regional;
-  document.getElementById("cGer").textContent = t.gerente;
-  document.getElementById("cDireccion").textContent = t.direccion;
-  document.getElementById("btnPrint").style.display = "inline-block";
+function buildChips(t,cls){
+  var h="";
+  for(var i=0;i<EC.length;i++){
+    var on=t[EC[i].k]==="SI";
+    h+="<span class='"+cls+" "+(on?"chip-on":"chip-off")+"'>"+EC[i].l+"</span>";
+  }
+  return h;
+}
+
+function openStore(t){
+  current=t;
+  for(var i=0;i<markers.length;i++){var s=findT(markers[i]._n);if(s)markers[i].setIcon(mkIcon(s,markers[i]._n===t.num));}
+  document.querySelectorAll(".item").forEach(function(el){el.classList.remove("active");});
+  var li=document.getElementById("i"+t.num);
+  if(li){li.classList.add("active");li.scrollIntoView({block:"nearest"});}
+  if(t.lat)mainMap.setView([t.lat,t.lon],13,{animate:true});
+
+  var c=CC[t.coordinador]||{bg:"#eee",fg:"#333"};
+  var f=FC[t.fmt]||{bg:"#eee",fg:"#333"};
+  var fb=document.getElementById("cFmt");
+  fb.textContent=t.fmt_label; fb.style.background=f.bg; fb.style.color=f.fg;
+  document.getElementById("cTitle").textContent=t.num+" — "+t.nombre;
+  document.getElementById("cCoord").innerHTML="<span class='fpill' style='background:"+c.bg+";color:"+c.fg+";'>"+esc(t.coordinador)+"</span>";
+  document.getElementById("cDir").textContent=t.director;
+  document.getElementById("cGer").textContent=t.gerente;
+  document.getElementById("cAddr").textContent=t.direccion;
+  document.getElementById("cChips").innerHTML=buildChips(t,"chip");
+  document.getElementById("cForm").innerHTML=t.form?"<span class='fbadge2'>"+esc(t.form)+"</span>":"<span style='color:#aaa;font-size:12px;'>—</span>";
 
   document.getElementById("ov").classList.add("open");
-
-  // mini mapa
-  document.getElementById("miniMap").innerHTML = "";
-  if (t.lat) {
-    setTimeout(() => {
-      if (miniMapInst) { miniMapInst.remove(); miniMapInst = null; }
-      const div = document.createElement("div");
-      div.style.cssText = "width:100%;height:100%;";
-      document.getElementById("miniMap").appendChild(div);
-      miniMapInst = L.map(div, {zoomControl:false, attributionControl:false}).setView([t.lat, t.lon], 14);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(miniMapInst);
-      L.marker([t.lat, t.lon], {icon: icon(t, true)}).addTo(miniMapInst);
-      miniMapInst.invalidateSize();
-    }, 60);
+  document.getElementById("mmap").innerHTML="";
+  if(t.lat){
+    setTimeout(function(){
+      if(miniInst){miniInst.remove();miniInst=null;}
+      var d=document.createElement("div"); d.style.cssText="width:100%;height:100%;";
+      document.getElementById("mmap").appendChild(d);
+      miniInst=L.map(d,{zoomControl:false,attributionControl:false}).setView([t.lat,t.lon],14);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(miniInst);
+      L.marker([t.lat,t.lon],{icon:mkIcon(t,true)}).addTo(miniInst);
+      miniInst.invalidateSize();
+    },60);
   }
 }
 
-function closeOv(e) { if (e.target === document.getElementById("ov")) closeOvDirect(); }
-function closeOvDirect() {
-  document.getElementById("ov").classList.remove("open");
-  if (miniMapInst) { miniMapInst.remove(); miniMapInst = null; }
+function closeOvD(){document.getElementById("ov").classList.remove("open");if(miniInst){miniInst.remove();miniInst=null;}}
+
+function reloadData(){
+  var btn=document.getElementById("updBtn"),ico=document.getElementById("spinIco"),st=document.getElementById("statusTxt");
+  ico.classList.add("spinning"); btn.disabled=true; st.textContent="Cargando...";
+  var xhr=new XMLHttpRequest();
+  xhr.open("GET","tiendas_datos.csv?t="+Date.now(),true);
+  xhr.onload=function(){
+    if(xhr.status===200){
+      var p=parseCSV(xhr.responseText);
+      if(p.length>0){TS=p; st.textContent="Actualizado "+(new Date()).toLocaleTimeString("es-AR");}
+      else st.textContent="CSV inválido";
+    } else st.textContent="No se encontró CSV";
+    ico.classList.remove("spinning"); btn.disabled=false;
+    renderList(TS); renderMarkers(TS); applyFilter();
+  };
+  xhr.onerror=function(){st.textContent="Error";ico.classList.remove("spinning");btn.disabled=false;};
+  xhr.send();
 }
 
-function doPrint() {
-  if (!current) return;
-  const t = current;
-  const c = CC[t.coordinador] || {bg:"#eee", fg:"#333"};
-  const f = FC[t.fmt] || {bg:"#eee", fg:"#333"};
+function parseCSV(txt){
+  var lines=txt.trim().split("
+"); if(lines.length<2)return [];
+  var result=[];
+  for(var i=1;i<lines.length;i++){
+    var v=lines[i].split(","); if(v.length<10)continue;
+    var lat=parseFloat(v[9]),lon=parseFloat(v[10]);
+    if(isNaN(lat)||isNaN(lon))continue;
+    result.push({num:(v[0]||"").trim(),nombre:(v[1]||"").trim(),fmt:(v[2]||"").trim(),fmt_label:(v[3]||"").trim(),coordinador:(v[4]||"").trim(),director:(v[5]||"").trim(),gerente:(v[7]||"").trim(),direccion:(v[8]||"").trim(),lat:lat,lon:lon,bandas:(v[11]||"NO").trim(),multipick:(v[12]||"NO").trim(),envios:(v[13]||"NO").trim(),hd:(v[14]||"NO").trim(),rt:(v[15]||"NO").trim(),pickup:(v[16]||"NO").trim(),form:(v[17]||"").trim()});
+  }
+  return result;
+}
 
-  document.getElementById("psBadge").textContent = t.fmt_label;
-  document.getElementById("psBadge").style.background = f.bg;
-  document.getElementById("psBadge").style.color = f.fg;
-  document.getElementById("psTitle").textContent = t.num + " — " + t.nombre;
-  document.getElementById("psSub").textContent = "Changomas · Directorio de Tiendas";
-  document.getElementById("psCoord").innerHTML = `<span style="background:${c.bg};color:${c.fg};padding:2px 8px;border-radius:4px;">${t.coordinador}</span>`;
-  document.getElementById("psDir").textContent = t.director;
-  document.getElementById("psReg").textContent = t.regional;
-  document.getElementById("psGer").textContent = t.gerente;
-  document.getElementById("psFmt").textContent = t.fmt_label;
-  document.getElementById("psNum").textContent = t.num;
-  document.getElementById("psDireccion").textContent = t.direccion;
-  document.getElementById("psFoot").textContent = "Generado el " + new Date().toLocaleDateString("es-AR", {day:"2-digit", month:"long", year:"numeric"}) + " · Changomas";
-
-  document.getElementById("psMapDiv").innerHTML = "";
-  document.getElementById("ps").style.display = "block";
-
-  setTimeout(() => {
-    if (psMapInst) { psMapInst.remove(); psMapInst = null; }
-    if (t.lat) {
-      const div = document.createElement("div");
-      div.style.cssText = "width:100%;height:100%;";
-      document.getElementById("psMapDiv").appendChild(div);
-      psMapInst = L.map(div, {zoomControl:false, attributionControl:false}).setView([t.lat, t.lon], 13);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(psMapInst);
-      L.marker([t.lat, t.lon]).addTo(psMapInst);
-      psMapInst.invalidateSize();
+function doPrint(){
+  if(!current)return;
+  var t=current;
+  var c=CC[t.coordinador]||{bg:"#eee",fg:"#333"};
+  var f=FC[t.fmt]||{bg:"#eee",fg:"#333"};
+  var pb=document.getElementById("psBadge");
+  pb.textContent=t.fmt_label; pb.style.background=f.bg; pb.style.color=f.fg;
+  document.getElementById("psTitle").textContent=t.num+" — "+t.nombre;
+  document.getElementById("psSub").textContent="Changomas · Directorio de Tiendas";
+  document.getElementById("psCoord").innerHTML="<span style='background:"+c.bg+";color:"+c.fg+";padding:1px 7px;border-radius:3px;'>"+esc(t.coordinador)+"</span>";
+  document.getElementById("psDir").textContent=t.director;
+  document.getElementById("psGer").textContent=t.gerente;
+  document.getElementById("psFmt").textContent=t.fmt_label;
+  document.getElementById("psNum").textContent=t.num;
+  document.getElementById("psDireccion").textContent=t.direccion;
+  document.getElementById("psChips").innerHTML=buildChips(t,"ps-chip");
+  document.getElementById("psFrmBadge").innerHTML=t.form?"<span style='background:#DDEBF7;color:#1F3864;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700;'>"+esc(t.form)+"</span>":"<span style='color:#aaa;font-size:11px;'>—</span>";
+  document.getElementById("psFoot").textContent="Generado "+(new Date()).toLocaleDateString("es-AR",{day:"2-digit",month:"long",year:"numeric"})+" · Changomas";
+  document.getElementById("psMapDiv").innerHTML="";
+  document.getElementById("ps").style.display="block";
+  setTimeout(function(){
+    if(psInst){psInst.remove();psInst=null;}
+    if(t.lat){
+      var d=document.createElement("div"); d.style.cssText="width:100%;height:100%;";
+      document.getElementById("psMapDiv").appendChild(d);
+      psInst=L.map(d,{zoomControl:false,attributionControl:false}).setView([t.lat,t.lon],13);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(psInst);
+      L.marker([t.lat,t.lon]).addTo(psInst);
+      psInst.invalidateSize();
     }
-    setTimeout(() => {
-      window.print();
-      document.getElementById("ps").style.display = "none";
-      if (psMapInst) { psMapInst.remove(); psMapInst = null; }
-    }, 900);
-  }, 150);
+    setTimeout(function(){window.print();document.getElementById("ps").style.display="none";if(psInst){psInst.remove();psInst=null;}},900);
+  },150);
 }
 
-// Arrancar cuando el DOM esté listo
-// Leaflet ya está cargado porque el <script> está antes de este bloque
-document.addEventListener("DOMContentLoaded", initMainMap);
+document.addEventListener("DOMContentLoaded",function(){
+  mainMap=L.map("map",{center:[-36,-64],zoom:4});
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap",maxZoom:19}).addTo(mainMap);
+  renderMarkers(TS); renderList(TS);
+});
 </script>
 </body>
 </html>
